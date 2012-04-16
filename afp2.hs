@@ -1,7 +1,7 @@
 --G52AFP Coursework 2 - Monadic Compiler
    
---Your full name(s)
---Your full email address(es)
+--Tom Bowden, Charlie Morgan
+--psytb@nottingham.ac.uk, psycm@nottingham.ac.uk
 
 
 --Imperative language
@@ -54,14 +54,39 @@ fac n                 =  Sequence [Assign 'A' (Val 1),
                                        Assign 'B' (App Sub (Var 'B') (Val 1))])]
 
 
+--State transformer monad
+-----------------
+
+
+-- needs to use data mechanism to make ST into an instance of a class
+data ST a             = S ( State -> (a, State)) 
+
+
+-- removes the dummy constructor
+apply                 :: ST a -> State -> (a, State)
+apply (S f) x         = f x
+
+
+
+instance Monad ST where
+  -- return           :: a -> ST a
+  return x            =  S (\s -> (x, s))
+  
+
+  --(>>=)             :: ST a -> (a -> ST b) -> ST b
+  st >>= f            =  S (\s -> let (x,s') = apply st s in apply (f x) s')
+
+
+
 --Compiler code
 -----------------
 
 comp                  :: Prog -> Code
 
-comp (Seqn [])        =  return []
-comp (Seqn (p:ps)     =  do 
-                             return (comp p ++ comp ps)
-comp (Assign n e)     =
-comp (While e p)      =
-comp (If e t f)       =
+
+
+
+
+
+
+
