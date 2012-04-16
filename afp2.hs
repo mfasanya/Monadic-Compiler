@@ -76,8 +76,6 @@ instance Monad ST where
   --(>>=)             :: ST a -> (a -> ST b) -> ST b
   st >>= f            =  S (\s -> let (x,s') = apply st s in apply (f x) s')
 
-
-
 --Compiler code
 -----------------
 
