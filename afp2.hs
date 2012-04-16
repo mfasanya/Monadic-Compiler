@@ -81,10 +81,4 @@ instance Monad ST where
 
 comp                  :: Prog -> Code
 
-
-
-
-
 Hello World
-
-
