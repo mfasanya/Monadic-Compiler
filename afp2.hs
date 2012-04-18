@@ -106,6 +106,14 @@ compProg (While xpr s)       =  do l    <- fresh
                                    cSeq <- compProg s
                                    return ([LABEL l] ++ compExp xpr ++ [JUMPZ l'] ++ cSeq ++ [JUMP 0, LABEL l'])
 
+compProg (If xpr p1 p2)      =  do l     <- fresh
+                                   l'    <- fresh
+                                   cTSeq <- compProg p1 -- compiled true sequence
+                                   cFSeq <- compProg p2 -- compiled false sequence
+                                   return (compExp xpr ++ [JUMPZ l] ++ cTSeq ++ [JUMP l', LABEL l] ++ cFSeq ++ [LABEL l'])
+
+
+
 
 
 -- compile expressions
