@@ -53,6 +53,16 @@ fac n                        =  Sequence [Assign 'A' (Val 1),
                                               Assign 'B' (App Sub (Var 'B') (Val 1))])]
 
 
+ifTest :: Prog
+ifTest =  Sequence [Assign 'A' (Val 0),
+                    If (Var 'A') (Sequence 
+                       [Assign 'A' (Val 5)]
+                    )
+                    (Sequence
+                       [Assign 'A' (Val 10)]
+                    )]
+
+
 --State transformer monad
 -----------------
 
@@ -111,9 +121,6 @@ compProg (If xpr p1 p2)      =  do l     <- fresh
                                    cTSeq <- compProg p1 -- compiled true sequence
                                    cFSeq <- compProg p2 -- compiled false sequence
                                    return (compExp xpr ++ [JUMPZ l] ++ cTSeq ++ [JUMP l', LABEL l] ++ cFSeq ++ [LABEL l'])
-
-
-
 
 
 -- compile expressions
