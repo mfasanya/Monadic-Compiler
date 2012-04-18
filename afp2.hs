@@ -3,6 +3,7 @@
 --Tom Bowden, Charlie Morgan
 --psytb@nottingham.ac.uk, psycm@nottingham.ac.uk
 
+import Data.List
 
 --Imperative language
 -------------------
@@ -53,15 +54,20 @@ fac n                        =  Sequence [Assign 'A' (Val 1),
                                               Assign 'B' (App Sub (Var 'B') (Val 1))])]
 
 
-ifTest :: Prog
-ifTest =  Sequence [Assign 'A' (Val 0),
-                    If (Var 'A') (Sequence 
-                       [Assign 'A' (Val 5)]
-                    )
-                    (Sequence
-                       [Assign 'A' (Val 10)]
-                    )]
-
+ifTest                       :: Prog
+ifTest                       =  Sequence [Assign 'A' (Val 0),
+                                          If (Var 'A') (Sequence 
+                                             [Assign 'A' (Val 5)]
+                                           )
+                                           (Sequence
+                                             [Assign 'A' (Val 10)]
+                                           )]
+                       
+                       
+opTest                       :: Prog
+opTest                       =  Sequence  [Assign 'A' (Val 20),
+                                           Assign 'B' (Val 5),
+                                           Assign 'C' (App Div (Var 'A') (Var 'B'))]
 
 --State transformer monad
 -----------------
@@ -131,3 +137,59 @@ compExp (Val n)              =  [PUSH n]
 compExp (Var v)              =  [PUSHV v]
 
 compExp (App op xp1 xp2)     =  compExp xp1 ++ compExp xp2 ++ [DO op]
+
+
+--Code execution
+-----------------
+
+--program counter
+type PC = Int
+
+exec                         :: Code -> Mem
+exec c                       =  ex c [] [] 0
+
+
+ex                           :: Code -> Mem -> Stack -> PC -> Mem
+
+
+ex code mem stack pc         =  if pc < length code then
+
+                                  case (code!!pc) of
+
+                                    PUSH n     -> ex code mem (n:stack) (pc+1)  
+
+                                    PUSHV v    -> ex code mem ((getVar v mem) : stack) (pc+1) 
+
+                                    POP v      -> ex code ((v, head stack):mem) (tail stack) (pc+1)  
+
+                                    DO op      -> ex code mem ((doOp op (take 2 stack)) : stack) (pc+1) 
+
+                                    LABEL l    -> ex code mem stack (pc+1)
+
+                                    JUMP l     -> ex code mem stack (getPC code l 0)  
+
+                                    JUMPZ l    -> ex code mem stack zPC
+                                                  where
+                                                    zPC = if (head stack) == 0 then (getPC code l 0) else (pc+1) 
+                                 else clear mem
+
+
+clear :: Mem -> Mem
+
+clear mem = nubBy (\(v, i) (v', i') -> v == v') mem
+
+getVar                       :: Name -> Mem -> Int
+getVar n ((v, i) : xs)       =  if v == n then i else getVar n xs
+
+
+doOp                         :: Op -> [Int] -> Int
+doOp Add (x:y:xs)              =  y + x
+doOp Sub (x:y:xs)              =  y - x
+doOp Mul (x:y:xs)              =  y * x
+doOp Div (x:y:xs)              =  y `div` x
+
+
+getPC                        :: Code -> Label -> Int -> PC
+getPC code l n               =  case (code!!n) of
+                                  LABEL l' -> if l == l' then n else getPC code l (n+1)
+                                  _        -> getPC code l (n+1)
