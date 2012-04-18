@@ -54,9 +54,21 @@ fac n                 =  Sequence [Assign 'A' (Val 1),
                                        Assign 'B' (App Sub (Var 'B') (Val 1))])]
 
 
+facCode               :: Int -> Code
+facCode n             = [PUSH 1, POP 'A',
+                         PUSH n,POP 'B',
+                         LABEL 0,
+                         PUSHV 'B', JUMPZ 1,
+                         PUSHV 'A',PUSHV 'B', DO Mul,POP 'A',
+                         PUSHV 'B',PUSH 1, DO Sub, POP 'B',
+                         JUMP 0,
+                         LABEL 1]
+
+
 --State transformer monad
 -----------------
 
+type State           = Label
 
 -- needs to use data mechanism to make ST into an instance of a class
 data ST a             = S ( State -> (a, State)) 
@@ -80,3 +92,17 @@ instance Monad ST where
 -----------------
 
 comp                  :: Prog -> Code
+
+-- empty program
+comp (Sequence [])    =  []
+
+--compile first statement followed by rest of the sequence
+comp (Sequence (x:xs)) = (comp x) ++ (comp (Sequence xs))
+
+comp (Assign n xpr)   =  compExp xpr ++  [POP n]
+
+
+
+-- compile expressions
+compExp               :: Expr -> Code
+compExp (Val n)       =  [PUSH n]
