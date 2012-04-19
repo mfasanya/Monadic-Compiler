@@ -175,7 +175,6 @@ ex code mem stack pc         =  if pc < length code then
 
 
 clear :: Mem -> Mem
-
 clear mem = nubBy (\(v, i) (v', i') -> v == v') mem
 
 getVar                       :: Name -> Mem -> Int
@@ -183,10 +182,10 @@ getVar n ((v, i) : xs)       =  if v == n then i else getVar n xs
 
 
 doOp                         :: Op -> [Int] -> Int
-doOp Add (x:y:xs)              =  y + x
-doOp Sub (x:y:xs)              =  y - x
-doOp Mul (x:y:xs)              =  y * x
-doOp Div (x:y:xs)              =  y `div` x
+doOp Add (x:y:xs)            =  y + x
+doOp Sub (x:y:xs)            =  y - x
+doOp Mul (x:y:xs)            =  y * x
+doOp Div (x:y:xs)            =  y `div` x
 
 
 getPC                        :: Code -> Label -> Int -> PC
